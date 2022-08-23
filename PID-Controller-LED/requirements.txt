@@ -1,0 +1,12 @@
+Components:
+  1x Arduino UNO
+  1x LED
+  1x LDR (Light dependent resistor)
+  1x Potentiometer
+  2x Resistor
+  1x Prototyping board
+  9x Jumper wires
+  
+  
+Assembly:
+  According to image
