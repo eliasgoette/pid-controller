@@ -13,13 +13,13 @@ float PV = 0; //Process variable (current sensor value)
 float dt = 0; //Delta time
 
 float P = 0; //Proportional gain
-float kP = 6.0; //P gain multiplier
+float kP = 6.0; //P gain multiplier --- change value to get the best results
 
 float It = 0; //Integral total gain
-float kI = 0.0001; //I gain multiplier
+float kI = 0.0001; //I gain multiplier --- change value to get the best results
 
 float D = 0; //Derivative gain
-float kD = 8.0; //D gain multiplier
+float kD = 8.0; //D gain multiplier --- change value to get the best results
 
 float gain = 0; //Total gain
 float cOut = 0; //Current output
@@ -30,35 +30,50 @@ float t1 = 0;
 float t2 = 0;
 
 void setup(){
+  //Setting pinmodes
   pinMode(led, OUTPUT);
   pinMode(ldrSensor, INPUT);
   pinMode(usrInput, INPUT);
+  //Start USB communication
   Serial.begin(9600);
 }
 
 void loop(){
+  //Read current potentiometer value
   Sp = analogRead(usrInput);
+  //If its below 25 itll be considered as zero
   if(Sp < 25){
     Sp = 0;
   }
   
+  
+  //Get current time and calculate loop time difference
   t2 = millis();
   dt = t2 - t1;
   t1 = millis();
+  
+  //Read sensor value and calculate error
   PV = analogRead(ldrSensor);
   Err = Sp - PV;
 
+  //Calculate proportional gain
   P = kP * Err;
   
+  //Calculate integral gain
   It = It + (Err * kI * dt);
   
+  //Calculate derivative gain
   D = kD * (pErr - Err) / dt;
 
+  //Set the previous error for the next loop
   pErr = Err;
   
+  //Add all gains together and add gain to current output
   gain = P + It + D;
   cOut = cOut + gain;
 
+  //Set current output variable to zero if its no number
+  //Make sure its between 0 and 1023 and set the analog output to the equivalent value
   if(isnan(cOut)){
     cOut = 0;
   } else{
@@ -75,15 +90,15 @@ void loop(){
     }
   }
 
+  //Send data via USB (used for graphs)
   Serial.print("Sp: " + (String)Sp + " ");
-
   Serial.print("PV: " + (String)PV + " ");
-
   Serial.print("cOutAnalog: " + (String)cOutAnalog + " ");
-  
   Serial.println(" ");
 
+  //Set the LEDs output to calculated value
   analogWrite(led, cOutAnalog);
   
+  //Wait 10 milliseconds before restarting the loop
   delay(10);
 }
